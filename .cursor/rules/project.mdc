@@ -1,0 +1,227 @@
+---
+description: Skillix MCP Server 项目规范
+globs:
+alwaysApply: true
+---
+
+# Skillix MCP Server 项目规范
+
+## 项目概述
+
+**Skillix** 是一个基于 MCP (Model Context Protocol) 的技能管理系统，为 AI 编码代理（如 Cursor）提供技能的创建、管理、加载和进化能力。
+
+> 核心理念: "Skill + Mix = Skillix" - 混合技能，智能赋能
+
+## 技术栈
+
+- **语言**: TypeScript
+- **运行时**: Node.js >= 18.0.0
+- **核心依赖**:
+  - `@modelcontextprotocol/sdk` - MCP SDK
+  - `zod` - 参数验证
+  - `yaml` - YAML 解析
+
+## 项目结构
+
+```
+skillix-mp/
+├── src/                    # 源代码目录
+│   ├── index.ts           # MCP Server 入口
+│   ├── services/          # 业务服务层
+│   │   ├── index.ts       # 统一导出
+│   │   ├── config.ts      # 配置管理服务
+│   │   └── skill.ts       # 技能管理服务
+│   ├── tools/             # MCP 工具实现
+│   │   ├── index.ts       # 工具统一导出（从子目录导出）
+│   │   ├── skills/        # sx_skill 工具
+│   │   │   ├── index.ts   # 工具入口 + 子命令导出
+│   │   │   ├── types.ts   # 工具参数类型
+│   │   │   ├── list.ts    # 列出技能
+│   │   │   ├── read.ts    # 读取技能
+│   │   │   ├── create.ts  # 创建技能
+│   │   │   ├── update.ts  # 更新技能
+│   │   │   └── delete.ts  # 删除技能
+│   │   ├── configs/       # sx_config 工具
+│   │   │   ├── index.ts   # 工具入口 + 子命令导出
+│   │   │   ├── types.ts   # 工具参数类型
+│   │   │   ├── get.ts     # 获取配置
+│   │   │   ├── set.ts     # 设置配置
+│   │   │   ├── init.ts    # 初始化项目
+│   │   │   └── sources.ts # 管理技能源
+│   │   └── helps/         # sx_help 工具
+│   │       ├── index.ts   # 工具入口 + 帮助内容导出
+│   │       ├── types.ts   # 工具参数类型
+│   │       ├── overview.ts # 概述帮助
+│   │       ├── skill.ts   # 技能工具帮助
+│   │       └── config.ts  # 配置工具帮助
+│   ├── types/             # 领域类型定义
+│   │   ├── index.ts       # 统一导出
+│   │   ├── config.ts      # 配置相关类型
+│   │   ├── response.ts    # 响应相关类型
+│   │   └── skill.ts       # 技能相关类型
+│   ├── utils/             # 工具函数
+│   │   ├── fs.ts          # 文件系统操作
+│   │   ├── markdown.ts    # Markdown 解析
+│   │   └── paths.ts       # 路径处理
+│   └── resources/         # MCP 资源实现（待实现）
+├── docs/                   # 设计文档
+│   ├── 01-调研/           # 调研文档
+│   └── 02-设计/           # 设计文档
+├── refer/                  # 参考项目
+├── package.json
+└── tsconfig.json
+```
+
+## MCP 工具命名规范
+
+采用 `sx_` 前缀的精简版工具设计：
+
+| 工具名 | 说明 | 包含操作 |
+|--------|------|----------|
+| `sx_skill` | 技能管理 | list, read, create, update, delete |
+| `sx_config` | 配置管理 | get, set, init, sources |
+| `sx_help` | 帮助信息 | 显示使用说明和示例 |
+| `sx_market` | 市场操作 | search, install, uninstall (待实现) |
+| `sx_triage` | 智能分流 | 分析任务，推荐技能 (待实现) |
+
+## 本地存储设计
+
+### 全局目录 (~/.skillix/)
+
+```
+~/.skillix/
+├── config.json            # 全局配置文件
+├── skills/                # 全局技能目录
+├── logs/                  # 系统日志目录
+├── cache/                 # 缓存目录
+└── data/                  # 数据目录
+```
+
+### 项目目录 (.skillix/)
+
+```
+project/
+└── .skillix/
+    ├── config.json        # 项目配置文件
+    ├── skills/            # 项目级技能目录
+    └── logs/              # 项目级日志目录
+```
+
+## 技能格式规范 (SKILL.md)
+
+### YAML Frontmatter
+
+```yaml
+---
+name: skill-name                    # 必需：技能名称（hyphen-case）
+description: 技能描述               # 必需：技能描述（含触发场景）
+version: 1.0.0                      # 可选：版本号
+author: author-name                 # 可选：作者
+tags: [tag1, tag2]                  # 可选：标签
+---
+```
+
+### 技能目录结构
+
+```
+skill-name/
+├── SKILL.md           # 必需：技能定义文件
+├── scripts/           # 可选：可执行脚本
+├── references/        # 可选：参考文档
+├── assets/            # 可选：资源文件
+└── logs/              # 可选：执行日志
+```
+
+### 命名规则
+
+- 格式: hyphen-case（小写字母、数字、连字符）
+- 开头: 必须以小写字母开头
+- 长度: 2-64 字符
+- 示例: ✅ `pdf-converter` ❌ `PDF_Converter`
+
+## 代码规范
+
+### TypeScript 规范
+
+- 使用 ES2022 目标
+- 使用 NodeNext 模块系统
+- 启用严格模式
+- 导入使用 `.js` 扩展名（ESM 规范）
+
+### 文件命名
+
+- 工具文件: `sx_*.ts` (如 `sx_skill.ts`)
+- 服务文件: `*.ts` (如 `skill.ts`, `config.ts`)
+- 类型文件: `*.ts` (如 `skill.ts`, `response.ts`)
+
+### 类型文件区别
+
+项目中有两类类型文件，职责不同：
+
+| 位置 | 用途 | 示例 |
+|------|------|------|
+| `src/types/` | **领域类型** - 业务实体和数据结构 | `SkillMetadata`, `SkillInfo`, `Skill`, `GlobalConfig` |
+| `src/tools/*/types.ts` | **工具参数类型** - MCP 工具的输入参数 | `SxSkillParams`, `SxConfigParams`, `SxHelpParams` |
+
+**设计原则**：
+- `src/types/` 定义核心业务模型，被 services 和 tools 共同使用
+- `tools/*/types.ts` 定义工具特定的参数接口，引用 `src/types/` 中的领域类型
+- 工具参数类型与工具实现放在同一目录，便于维护
+
+### 响应格式
+
+工具响应统一使用 `ToolResponse` 接口：
+
+```typescript
+interface ToolResponse {
+  success: boolean;
+  message: string;
+  data?: unknown;
+  errors?: string[];
+  warnings?: string[];
+}
+```
+
+## 本地优先策略
+
+1. **技能查找顺序**: 项目技能 → 全局技能 → 远程市场
+2. **配置优先级**: 项目配置 → 全局配置 → 默认配置
+3. **同名技能**: 项目级技能覆盖全局技能
+
+## 开发命令
+
+```bash
+# 安装依赖
+npm install
+
+# 开发模式
+npm run dev
+
+# 构建
+npm run build
+
+# 运行
+npm start
+```
+
+## MCP 配置
+
+```json
+// ~/.cursor/mcp.json
+{
+  "mcpServers": {
+    "skillix": {
+      "command": "npx",
+      "args": ["skillix-mcp"]
+    }
+  }
+}
+```
+
+## 设计文档参考
+
+- 项目设计: `docs/02-设计/20260111-01-项目设计.md`
+- 技术选型: `docs/02-设计/20260111-02-技术选型.md`
+- 自动创建与进化: `docs/02-设计/20260111-03-自动创建与进化设计.md`
+- 实现计划: `docs/02-设计/20260111-04-实现计划.md`
+- 技能创建逻辑: `docs/02-设计/20260111-06-技能创建逻辑设计.md`
