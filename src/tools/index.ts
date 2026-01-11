@@ -6,9 +6,5 @@ export { sxSkill, sxSkillDefinition, type SxSkillParams } from './skills/index.j
 export { sxConfig, sxConfigDefinition, type SxConfigParams } from './configs/index.js';
 export { sxHelp, sxHelpDefinition, type SxHelpParams } from './helps/index.js';
 
-// 工具注册表
-export { toolRegistry, getAvailableTools, type ToolConfig } from './registry.js';
-
-// Schema 配置和构建器
-export { toolSchemas, type PropertyDef, type ToolSchemaDef } from './tool-schemas.js';
-export { buildToolSchema, buildToolSchemas } from './schema-builder.js';
+// 工具配置
+export { toolDefinitions, getToolNames, type ToolDefinition, type JsonSchema } from './tool-config.js';

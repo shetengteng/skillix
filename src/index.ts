@@ -4,37 +4,72 @@
  * 提供 AI 技能管理功能的 MCP 服务器
  */
 
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
 
-import { toolRegistry, getAvailableTools } from './tools/registry.js';
+import { toolDefinitions, getToolNames } from './tools/tool-config.js';
 
 /**
  * 创建 MCP Server
  */
-function createServer(): McpServer {
-  const server = new McpServer({
-    name: 'skillix-mcp',
-    version: '1.0.0',
-  });
+function createServer(): Server {
+  const server = new Server(
+    {
+      name: 'skillix-mcp',
+      version: '1.0.0',
+    },
+    {
+      capabilities: {
+        tools: {},
+      },
+    }
+  );
 
-  // 从注册表批量注册工具
-  for (const tool of toolRegistry) {
-    server.registerTool(tool.name, {
-      description: tool.description,
-      inputSchema: tool.schema,
-    }, async (args) => {
-      const result = tool.handler(args);
+  // 处理工具列表请求
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: toolDefinitions.map(({ name, description, inputSchema }) => ({
+      name,
+      description,
+      inputSchema,
+    })),
+  }));
+
+  // 处理工具调用请求
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    const { name, arguments: args } = request.params;
+    
+    const tool = toolDefinitions.find(t => t.name === name);
+    
+    if (!tool) {
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result, null, 2),
+            text: JSON.stringify({
+              success: false,
+              message: `未知工具: ${name}`,
+              errors: [`可用工具: ${getToolNames().join(', ')}`],
+            }),
           },
         ],
       };
-    });
-  }
+    }
+
+    const result = tool.handler(args || {});
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(result, null, 2),
+        },
+      ],
+    };
+  });
 
   return server;
 }
@@ -49,7 +84,7 @@ async function main(): Promise<void> {
   await server.connect(transport);
 
   console.error('Skillix MCP Server 已启动');
-  console.error(`可用工具: ${getAvailableTools().join(', ')}`);
+  console.error(`可用工具: ${getToolNames().join(', ')}`);
 }
 
 // 启动服务器
