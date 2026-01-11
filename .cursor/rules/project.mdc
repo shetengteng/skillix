@@ -24,27 +24,32 @@ alwaysApply: true
 ## 项目结构
 
 ```
-skillix-mp/
+skillix-mcp/
 ├── src/                    # 源代码目录
 │   ├── index.ts           # MCP Server 入口
 │   ├── services/          # 业务服务层
 │   │   ├── index.ts       # 统一导出
-│   │   ├── config.ts      # 配置管理服务
-│   │   ├── skill.ts       # 技能管理服务（门面）
-│   │   └── skill/         # 技能服务实现
+│   │   ├── types.ts       # 服务层类型定义（领域类型）
+│   │   ├── config/        # 配置管理服务
+│   │   │   ├── index.ts   # 统一导出
+│   │   │   ├── global.ts  # 全局配置
+│   │   │   ├── project.ts # 项目配置
+│   │   │   ├── effective.ts # 有效配置计算
+│   │   │   └── source.ts  # 技能源管理
+│   │   └── skill/         # 技能管理服务
 │   │       ├── index.ts   # 统一导出
+│   │       ├── list.ts    # 列出技能
+│   │       ├── get.ts     # 获取技能
+│   │       ├── read.ts    # 读取技能内容
 │   │       ├── create.ts  # 创建技能
+│   │       ├── update.ts  # 更新技能
 │   │       ├── delete.ts  # 删除技能
 │   │       ├── exists.ts  # 检查技能存在
-│   │       ├── get.ts     # 获取技能
-│   │       ├── list.ts    # 列出技能
 │   │       ├── load.ts    # 加载技能
-│   │       ├── read.ts    # 读取技能内容
-│   │       ├── search.ts  # 搜索技能
-│   │       └── update.ts  # 更新技能
+│   │       └── search.ts  # 搜索技能
 │   ├── tools/             # MCP 工具实现
 │   │   ├── index.ts       # 工具统一导出（从子目录导出）
-│   │   ├── types.ts       # 工具参数类型（SxSkillParams, SxConfigParams, SxHelpParams）
+│   │   ├── types.ts       # 工具参数类型 + ToolResponse
 │   │   ├── skills/        # sx-skill 工具
 │   │   │   ├── index.ts   # 工具入口 + 子命令导出
 │   │   │   ├── list.ts    # 列出技能
@@ -63,34 +68,25 @@ skillix-mp/
 │   │       ├── overview.ts # 概述帮助
 │   │       ├── skill.ts   # 技能工具帮助
 │   │       └── config.ts  # 配置工具帮助
-│   ├── types/             # 领域类型定义（按功能分目录）
-│   │   ├── skill/         # 技能相关类型
-│   │   │   ├── skill.ts   # Skill 接口
-│   │   │   ├── scope.ts   # SkillScope 类型
-│   │   │   ├── metadata.ts # SkillMetadata 接口
-│   │   │   ├── info.ts    # SkillInfo 接口
-│   │   │   └── *-params.ts # 技能操作参数类型
-│   │   ├── config/        # 配置相关类型
-│   │   │   ├── global.ts  # GlobalConfig 接口 + 默认值
-│   │   │   ├── project.ts # ProjectConfig 接口 + 默认值
-│   │   │   ├── source.ts  # SkillSource 接口
-│   │   │   └── ...        # 其他配置类型
-│   │   └── response/      # 响应相关类型
-│   │       ├── tool.ts    # ToolResponse 接口
-│   │       ├── listed-skill.ts # ListedSkill 接口
-│   │       ├── list-skills.ts  # ListSkillsResponse 接口
-│   │       └── ...        # 其他响应类型
 │   ├── utils/             # 工具函数
 │   │   ├── fs.ts          # 文件系统操作
 │   │   ├── markdown.ts    # Markdown 解析
 │   │   └── paths.ts       # 路径处理
 │   └── resources/         # MCP 资源实现（待实现）
+├── tests/                  # 测试目录
+│   ├── fixtures/          # 测试数据
+│   ├── helpers/           # 测试辅助函数
+│   ├── services/          # 服务层测试
+│   ├── tools/             # 工具层测试
+│   └── utils/             # 工具函数测试
 ├── docs/                   # 设计文档
 │   ├── 01-调研/           # 调研文档
-│   └── 02-设计/           # 设计文档
+│   ├── 02-设计/           # 设计文档
+│   └── 03-实现/           # 实现文档
 ├── refer/                  # 参考项目
 ├── package.json
-└── tsconfig.json
+├── tsconfig.json
+└── vitest.config.ts       # 测试配置
 ```
 
 ## MCP 工具命名规范
@@ -183,27 +179,33 @@ skill-name/
 
 类型定义分为两部分：
 
-1. **领域类型** (`src/types/`)：按功能分目录，一个类型一个文件
-
-| 目录 | 用途 | 包含类型 |
-|------|------|----------|
-| `skill/` | 技能相关类型 | `Skill`, `SkillScope`, `SkillMetadata`, `SkillInfo`, 操作参数 |
-| `config/` | 配置相关类型 | `GlobalConfig`, `ProjectConfig`, `SkillSource`, 子配置 |
-| `response/` | 响应相关类型 | `ToolResponse`, `ListedSkill`, `ListSkillsResponse`, 错误码 |
-
-2. **工具参数类型** (`src/tools/types.ts`)：所有 MCP 工具的输入参数类型
+1. **服务层类型** (`src/services/types.ts`)：所有领域类型集中在一个文件
 
 | 类型 | 用途 |
 |------|------|
+| `SkillScope` | 技能范围 (global/project) |
+| `SkillMetadata` | 技能元数据 (YAML frontmatter) |
+| `SkillSource` / `SourceConfig` | 技能源配置 |
+| `GlobalConfig` | 全局配置 |
+| `ProjectConfig` | 项目配置 |
+| `Skill` | 技能完整内容 |
+| `ListedSkill` | 列出的技能项 |
+| `ListSkillsResponse` | 技能列表响应 |
+
+2. **工具层类型** (`src/tools/types.ts`)：所有 MCP 工具的输入/输出类型
+
+| 类型 | 用途 |
+|------|------|
+| `ToolResponse` | 工具响应 |
 | `SxSkillParams` | sx-skill 工具参数 |
 | `SxConfigParams` | sx-config 工具参数 |
 | `SxHelpParams` | sx-help 工具参数 |
 
 **设计原则**：
-- 领域类型按功能分目录，每个类型单独一个文件
-- 工具参数类型集中在 `src/tools/types.ts`，与工具实现放在一起
-- 文件名使用 kebab-case，不使用 `index.ts` 统一导出
-- 类型之间有依赖时，使用相对路径导入
+- 服务层类型集中在 `src/services/types.ts`，被 services 和 utils 使用
+- 工具层类型集中在 `src/tools/types.ts`，被 tools 使用
+- 类型按使用层级划分，避免循环依赖
+- 文件名使用 kebab-case
 
 ### 响应格式
 
