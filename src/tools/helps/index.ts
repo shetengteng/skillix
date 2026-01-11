@@ -70,4 +70,5 @@ export const sxHelpDefinition = {
       },
     },
   },
+  handler: (args: any): ToolResponse => sxHelp(args as SxHelpParams),
 };

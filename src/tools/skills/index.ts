@@ -88,4 +88,5 @@ export const sxSkillDefinition = {
     },
     required: ['action'],
   },
+  handler: (args: any): ToolResponse => sxSkill(args as SxSkillParams),
 };

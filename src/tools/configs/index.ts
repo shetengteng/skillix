@@ -92,4 +92,5 @@ export const sxConfigDefinition = {
     },
     required: ['action'],
   },
+  handler: (args: any): ToolResponse => sxConfig(args as SxConfigParams),
 };
