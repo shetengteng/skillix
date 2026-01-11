@@ -1,9 +1,9 @@
 /**
- * 技能完整内容类型定义
+ * 技能服务专用类型定义
  */
 
-import type { SkillMetadata } from './metadata.js';
-import type { SkillScope } from './scope.js';
+import type { SkillMetadata } from '../../types/skill/metadata.js';
+import type { SkillScope } from '../../types/skill/scope.js';
 
 /**
  * 技能完整内容
@@ -22,4 +22,14 @@ export interface Skill {
   hasScripts: boolean;
   hasReferences: boolean;
   hasAssets: boolean;
+}
+
+/**
+ * 列出的技能项
+ */
+export interface ListedSkill {
+  name: string;
+  description: string;
+  source: string;
+  path?: string;
 }

@@ -2,7 +2,7 @@
  * 创建技能
  */
 
-import type { Skill } from '../../types/skill/skill.js';
+import type { Skill } from './types.js';
 import type { SkillMetadata } from '../../types/skill/metadata.js';
 import type { SkillScope } from '../../types/skill/scope.js';
 import * as paths from '../../utils/paths.js';

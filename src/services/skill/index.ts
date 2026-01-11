@@ -4,10 +4,9 @@
  */
 
 // 类型导出
-export type { Skill } from '../../types/skill/skill.js';
+export type { Skill, ListedSkill } from './types.js';
 export type { SkillMetadata } from '../../types/skill/metadata.js';
 export type { SkillScope } from '../../types/skill/scope.js';
-export type { ListedSkill } from '../../types/response/listed-skill.js';
 export type { ListSkillsResponse } from '../../types/response/list-skills.js';
 
 // 内部工具函数

@@ -2,8 +2,7 @@
  * 有效配置计算服务
  */
 
-import type { GlobalConfig } from '../../types/config/global.js';
-import type { ProjectConfig } from '../../types/config/project.js';
+import type { GlobalConfig, ProjectConfig } from './types.js';
 import type { SourceConfig } from '../../types/config/source.js';
 import { getGlobalConfig } from './global.js';
 import { getProjectConfig } from './project.js';

@@ -2,7 +2,7 @@
  * 更新技能
  */
 
-import type { Skill } from '../../types/skill/skill.js';
+import type { Skill } from './types.js';
 import type { SkillMetadata } from '../../types/skill/metadata.js';
 import * as paths from '../../utils/paths.js';
 import * as fs from '../../utils/fs.js';

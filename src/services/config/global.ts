@@ -2,8 +2,8 @@
  * 全局配置服务
  */
 
-import type { GlobalConfig } from '../../types/config/global.js';
-import { DEFAULT_GLOBAL_CONFIG } from '../../types/config/global.js';
+import type { GlobalConfig } from './types.js';
+import { DEFAULT_GLOBAL_CONFIG } from './types.js';
 import * as paths from '../../utils/paths.js';
 import * as fs from '../../utils/fs.js';
 
