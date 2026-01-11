@@ -3,3 +3,4 @@ userinput.py
 prompts.txt
 dist/
 node_modules/
+.idea/
